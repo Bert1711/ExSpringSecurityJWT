@@ -1,9 +1,9 @@
-package com.zaroyan.exspringsecurityjwt;
+package com.zaroyan.exspringsecurityjwt.dto;
 
 /**
  * @author Zaroyan
  */
-public class AuthRequestDto {
+public class UserDto {
     private String username;
     private String password;
 

@@ -1,4 +1,4 @@
-package com.zaroyan.exspringsecurityjwt;
+package com.zaroyan.exspringsecurityjwt.security;
 
 import com.zaroyan.exspringsecurityjwt.entities.User;
 import org.springframework.security.core.GrantedAuthority;
