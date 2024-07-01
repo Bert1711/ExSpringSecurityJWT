@@ -3,6 +3,7 @@ package com.zaroyan.exspringsecurityjwt.controllers;
 import com.zaroyan.exspringsecurityjwt.dto.UserDto;
 import com.zaroyan.exspringsecurityjwt.entities.User;
 import com.zaroyan.exspringsecurityjwt.service.RegistrationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,10 +26,10 @@ public class RegistrationController {
     }
 
 
+
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody UserDto userRequest) {
         try {
-
             registrationService.register(userRequest);
             return ResponseEntity.ok("Пользователь успешно зарегистрирован.");
         } catch (Exception e) {

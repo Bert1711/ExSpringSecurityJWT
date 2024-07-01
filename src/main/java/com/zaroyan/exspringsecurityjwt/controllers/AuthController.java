@@ -1,8 +1,9 @@
 package com.zaroyan.exspringsecurityjwt.controllers;
 
-import com.zaroyan.exspringsecurityjwt.security.JwtUtil;
 import com.zaroyan.exspringsecurityjwt.dto.JwtResponseDto;
 import com.zaroyan.exspringsecurityjwt.dto.UserDto;
+import com.zaroyan.exspringsecurityjwt.security.JwtUtil;
+import com.zaroyan.exspringsecurityjwt.service.AuthService;
 import com.zaroyan.exspringsecurityjwt.service.UserDetailsServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,17 +29,17 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final UserDetailsServiceImpl userDetailsService;
 
-    private final JwtUtil jwtTokenUtils;
     private final AuthenticationManager authenticationManager;
+    private final AuthService authService;
 
     @Autowired
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtUtil jwtTokenUtils,
-            UserDetailsServiceImpl userDetailsService) {
+            UserDetailsServiceImpl userDetailsService, AuthService authService) {
         this.authenticationManager = authenticationManager;
-        this.jwtTokenUtils = jwtTokenUtils;
         this.userDetailsService = userDetailsService;
+        this.authService = authService;
     }
 
     @PostMapping("/login")
@@ -48,14 +48,9 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userDto.getUsername(), userDto.getPassword())
             );
-
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String token = jwtTokenUtils.generateToken(userDetails);
-//            log.info(token);
-
-            return ResponseEntity.ok(new JwtResponseDto(token));
+            return ResponseEntity.ok(new JwtResponseDto(authService.performLogin(authentication)));
         } catch (AuthenticationException e) {
-            log.info("Ошибка аутентификации: {}", e.getMessage());
+            log.info("Ошибка аутентификации: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
@@ -64,9 +59,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response,
                                          @RequestHeader("auth-token") String authToken) {
-        log.info("пришел токен: " + authToken);
-
-        String jwt = authToken.substring(7);
+        String jwt = authToken;
 
         if (jwt == null) {
             return new ResponseEntity<>("Что-то пошло не так",
@@ -76,8 +69,6 @@ public class AuthController {
         if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
-        log.info("logout");
-
-        return ResponseEntity.ok("Success logout");
+        return ResponseEntity.ok(jwt);
     }
 }

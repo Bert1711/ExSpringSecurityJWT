@@ -3,6 +3,7 @@ package com.zaroyan.exspringsecurityjwt.service;
 import com.zaroyan.exspringsecurityjwt.security.UserEntityDetails;
 import com.zaroyan.exspringsecurityjwt.entities.User;
 import com.zaroyan.exspringsecurityjwt.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,15 +27,24 @@ public class UserDetailsServiceImpl implements org.springframework.security.core
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("Запрошена загрузка пользователя с именем: {}", username);
+        log.info("Запрошена загрузка пользователя с именем: " + username);
         Optional<User> user = userRepository.findByUsername(username);
 
         if (user.isPresent()) {
-            log.info("Пользователь с именем {} найден", username);
+            log.info("Пользователь с именем '%s' найден", username);
             return new UserEntityDetails(user.get());
         } else {
-            log.warn("Пользователь с именем {} не найден", username);
+            log.warn("Пользователь с именем '%s' не найден", username);
             throw new UsernameNotFoundException("Пользователь не найден!");
         }
     }
+
+
+
+//    public User createNewUser(RegistrationUserDto registrationUserDto) {
+//        User user = new User();
+//        user.setUsername(registrationUserDto.getUsername());
+//        user.setPassword(passwordEncoder.encode(registrationUserDto.getPassword()));
+//        return userRepository.save(user);
+//    }
 }
